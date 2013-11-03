@@ -992,6 +992,7 @@ typedef struct
     [self removeViewController:self.leftViewController];
     [self removeViewController:self.rightViewController];
     [self.frontView setUserInteractionForContainedViewEnabled:YES];
+    self.navigationController.interactivePopGestureRecognizer.enabled = YES;
 }
 
 - (void)showRightView
@@ -1001,6 +1002,7 @@ typedef struct
     [self removeViewController:self.leftViewController];
     [self addViewController:self.rightViewController container:self.rightView];
     [self.frontView setUserInteractionForContainedViewEnabled:NO];
+    self.navigationController.interactivePopGestureRecognizer.enabled = NO;
 }
 
 - (void)showLeftView
@@ -1093,6 +1095,8 @@ typedef struct
 
 - (void)animateToState:(PKRevealControllerState)toState completion:(PKDefaultCompletionHandler)completion
 {
+    __weak PKRevealController* weakSelf = self;
+
     [self updateRearViewVisibility];
     [self.animator stopAnimationForKey:kPKRevealControllerFrontViewTranslationAnimationKey];
     
@@ -1102,13 +1106,13 @@ typedef struct
     
     animation.progressHandler = ^(NSValue *fromValue, NSValue *toValue, NSUInteger index)
     {
-        if ([fromValue CGPointValue].x == [self centerPointForState:PKRevealControllerShowsFrontViewController].x)
+        if ([fromValue CGPointValue].x == [weakSelf centerPointForState:PKRevealControllerShowsFrontViewController].x)
         {
-            [self updateRearViewVisibilityForFrontViewPosition:[toValue CGPointValue]];
+            [weakSelf updateRearViewVisibilityForFrontViewPosition:[toValue CGPointValue]];
         }
         else
         {
-            [self updateRearViewVisibility];
+            [weakSelf updateRearViewVisibility];
         }
     };
     
@@ -1116,13 +1120,13 @@ typedef struct
     {
         if (finished)
         {
-            [self updateRearViewVisibility];
+            [weakSelf updateRearViewVisibility];
         }
         
-        [self updateTapGestureRecognizerPrecence];
-        [self updatePanGestureRecognizerPresence];
+        [weakSelf updateTapGestureRecognizerPrecence];
+        [weakSelf updatePanGestureRecognizerPresence];
         
-        [self pk_performBlock:^
+        [weakSelf pk_performBlock:^
         {
             if (completion)
             {
